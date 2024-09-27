@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+.chat-app {
+  display: flex;
+  height: 90vh; /* Adjust based on your needs */
+}
+
+.friend-list-container {
+  flex: 1;
+  border-right: 1px solid #ccc; /* Adds a line between the list and chat window */
+  overflow-y: auto; /* Makes the friend list scrollable */
+}
+
+.chat-window-container {
+  flex: 3;
+  overflow-y: auto; /* Makes the chat window scrollable */
+}
+
+.top-bar {
+  height: 60px; /* Example height, adjust as needed */
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+}
