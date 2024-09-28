@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    build: ./src/backend/chat-backend 
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/chatapp
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+      - mongo
+  frontend:
+    build: ./src/frontend/chat-app 
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/frontend/chat-app/src:/app/src 
+    depends_on:
+      - app
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+  mongo:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
