@@ -1,41 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 
-const ChatWindow = () => {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello!", sender: "user" },
-    { id: 2, text: "Hi there!", sender: "other" },
-    { id: 3, text: "How are you doing?", sender: "user" },
-    { id: 4, text: "I'm doing great, thanks for asking!", sender: "other" },
-    { id: 5, text: "That's wonderful to hear!", sender: "user" },
-    { id: 6, text: "What have you been up to lately?", sender: "other" },
-    { id: 7, text: "Just working on some coding projects. How about you?", sender: "user" },
-    { id: 8, text: "That sounds interesting! I've been reading a lot.", sender: "other" },
-    { id: 9, text: "Reading is always good. Any book recommendations?", sender: "user" },
-    { id: 10, text: "Yes, I'd recommend 'The Pragmatic Programmer'. It's great for developers!", sender: "other" }
-  ]);
+const ChatWindow = () => { 
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const currentFriend = useSelector((state) => state.chat.currentFriend);
 
-  // Dummy data for the user being chatted with
-  const chatPartner = {
-    name: "John Doe",
-    profilePicture: "https://thumbs.dreamstime.com/b/cute-cat-portrait-square-photo-beautiful-white-closeup-105311158.jpg"
+  useEffect(() => {
+    if (currentFriend && currentFriend._id) {
+      fetchMessages();
+    }
+  }, [currentFriend]);
+
+  const fetchMessages = () => {
+    const token = localStorage.getItem('token');
+    axios.get(`http://localhost:8080/messages/${currentFriend._id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        setMessages(response.data.map(msg => ({
+          id: msg._id,
+          text: msg.content,
+          sender: msg.sender === currentUser._id ? 'user' : 'friend'
+        })));
+      })
+      .catch(error => {
+        console.error('Failed to fetch messages:', error);
+        console.error('Error details:', error.response ? error.response.data : error.message);
+      });
   };
 
-  const handleSendMessage = (event) => {
+  const handleSendMessage = async (event) => {
     event.preventDefault();
-    if (inputText.trim()) {
-      const newMessage = { id: messages.length + 1, text: inputText, sender: "user" };
-      setMessages([...messages, newMessage]);
-      setInputText(''); // Clear input after sending
+    if (inputText.trim() && currentUser && currentFriend) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post('http://localhost:8080/messages', {
+          content: inputText,
+          receiver: currentFriend._id
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const newMessage = {
+          id: response.data._id,
+          text: response.data.content,
+          sender: 'user'
+        };
+
+        setMessages([...messages, newMessage]);
+        setInputText('');
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
     }
   };
+
+  if (!currentFriend) {
+    return <div>Select a friend to start chatting</div>;
+  }
 
   return (
     <div className="d-flex flex-column h-100">
       <div className="bg-primary text-white top-bar">
         <div className="d-flex align-items-center">
-          <img src={chatPartner.profilePicture} alt={chatPartner.name} className="rounded-circle me-2" width="40" height="40" />
-          <h5 className="mb-0">{chatPartner.name}</h5>
+          <h5 className="mb-0">{currentFriend.username}</h5>
         </div>
       </div>
       <div className="p-3 bg-light" style={{ overflowY: 'auto', flexGrow: 1 }}>
