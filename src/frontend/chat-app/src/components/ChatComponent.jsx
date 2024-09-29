@@ -20,12 +20,18 @@ function ChatComponent({ friendId }) {
     }, [friendId]);
 
     useEffect(() => {
+        fetchMessages(friendId);  // Using the fetchMessages function
+    }, [friendId]);
+
+    function fetchMessages(friendId) {
         axios.get(`http://localhost:8080/messages/${friendId}`)
             .then(response => {
                 setMessages(response.data);
             })
-            .catch(error => console.error('Error fetching messages:', error));
-    }, [friendId]);
+            .catch(error => {
+                console.error('Error fetching messages:', error);
+            });
+    }
 
     return (
         <div>

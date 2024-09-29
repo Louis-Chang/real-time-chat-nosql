@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "NoSQL chat app",
+  "name": "This is a chat app made with NoSQL",
   "icons": [
     {
       "src": "favicon.ico",
